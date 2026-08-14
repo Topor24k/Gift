@@ -1,15 +1,19 @@
 import { useEffect, useRef, useState, type RefObject, type ChangeEvent } from 'react'
-import heroVideo from '@/imports/moments/IMG_5973.MP4'
+
+const asset = (name: string) => new URL(`../assets/${name}`, import.meta.url).href
+
+const heroVideo = asset('IMG_5973.MP4')
 
 // Dynamically load all photo_2026-08-15 memories for the collage
 const memoriesGlob = import.meta.glob<{ default: string }>(
-  '@/imports/moments/photo_2026-08-15_*.jpg',
+  '../assets/photo_2026-08-15_*.jpg',
   { eager: true }
 )
 const memoryPhotos: string[] = Object.values(memoriesGlob)
   .map((m) => m.default)
   .sort()
-import albumMusic from '@/imports/moments/Album Page.mp3'
+
+const albumMusic = asset('Album Page.mp3')
 import imgBouquet from '@/imports/061576612878c47a4262f1fa76214ab6.jpg'
 import imgMyOnlyLove from '@/imports/05a0f047f03e9a78346ac78e922c4543.jpg'
 import imgDefinition from '@/imports/964276ba446619ccd25674ae91bff98e.jpg'
@@ -17,19 +21,19 @@ import imgIFoundYou from '@/imports/bdd8b6daabe3c5b06e8843ec7f562ffb.jpg'
 import imgCameras from '@/imports/1932e3ee226fd9bf28a923c9a1e56d75.jpg'
 
 // Personal timeline photos
-import mAug15  from '@/imports/moments/August 15.jpg'
-import mSep15  from '@/imports/moments/September 15.jpg'
-import mOct15  from '@/imports/moments/October 15.jpg'
-import mNov15  from '@/imports/moments/November 15.jpg'
-import mDec16  from '@/imports/moments/December 16.jpg'
-import mJan15  from '@/imports/moments/January 15.jpg'
-import mFeb14  from '@/imports/moments/February 14.jpg'
-import mFeb15  from '@/imports/moments/February 15.jpg'
-import mMar16  from '@/imports/moments/March 16.jpg'
-import mApr10  from '@/imports/moments/April 10.jpg'
-import mMay23  from '@/imports/moments/May 23.jpg'
-import mJun20  from '@/imports/moments/June 20.jpg'
-import mJul15  from '@/imports/moments/July 15.jpg'
+const mAug15  = asset('August 15.jpg')
+const mSep15  = asset('September 15.jpg')
+const mOct15  = asset('October 15.jpg')
+const mNov15  = asset('November 15.jpg')
+const mDec16  = asset('December 16.jpg')
+const mJan15  = asset('January 15.jpg')
+const mFeb14  = asset('February 14.jpg')
+const mFeb15  = asset('February 15.jpg')
+const mMar16  = asset('March 16.jpg')
+const mApr10  = asset('April 10.jpg')
+const mMay23  = asset('May 23.jpg')
+const mJun20  = asset('June 20.jpg')
+const mJul15  = asset('July 15.jpg')
 
 // Supplemental Unsplash imagery — all treated as B&W via CSS
 const U = {
