@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+@import 'tailwindcss';
+
+:root {
+  --paper: #F5F3EE;
+  --paper-dark: #EDEDED;
+  --ink: #0D0D0D;
+  --ink-soft: #2A2A2A;
+  --muted: #8A8680;
+  --accent: #7A1919;
+  --border-fine: rgba(13,13,13,0.12);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: 'EB Garamond', Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Hide scrollbar while still scrollable */
+::-webkit-scrollbar { width: 0px; }
+
+.font-script {
+  font-family: 'Alex Brush', cursive;
+}
+
+.font-serif {
+  font-family: 'EB Garamond', Georgia, serif;
+}
+
+.font-sans {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.grayscale-photo {
+  filter: grayscale(100%) contrast(1.05);
+  transition: filter 0.6s ease;
+}
+
+.grayscale-photo:hover {
+  filter: grayscale(0%) contrast(1);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(6px); }
+}
+
+.scroll-bounce {
+  animation: scrollBounce 2s ease-in-out infinite;
+}
+
+/* ── Intro overlay ── */
+@keyframes introFadeOut {
+  0%   { opacity: 1; }
+  100% { opacity: 0; pointer-events: none; }
+}
+
+@keyframes introScriptIn {
+  0%   { opacity: 0; transform: translateY(18px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes introSubIn {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes introLineGrow {
+  0%   { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+/* ── Dot nav ── */
+button:hover .nav-label {
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+}
+
+@keyframes dotPulse {
+  0%   { transform: scale(1);   opacity: 0.25; }
+  60%  { transform: scale(2.2); opacity: 0; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* ── Lightbox ── */
+@keyframes lbIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes lbBgIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes musicBar1 {
+  from { transform: scaleY(0.3); }
+  to   { transform: scaleY(1); }
+}
+@keyframes musicBar2 {
+  from { transform: scaleY(0.6); }
+  to   { transform: scaleY(0.2); }
+}
+@keyframes musicBar3 {
+  from { transform: scaleY(1); }
+  to   { transform: scaleY(0.4); }
+}
