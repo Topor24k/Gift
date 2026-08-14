@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Binary, MongoClient } from 'mongodb'
+import { GridFSBucket, MongoClient } from 'mongodb'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -32,7 +32,9 @@ async function main() {
   await client.connect()
 
   try {
-    const collection = client.db(MONGODB_DB).collection('media')
+    const db = client.db(MONGODB_DB)
+    const collection = db.collection('media')
+    const bucket = new GridFSBucket(db, { bucketName: 'media' })
     const entries = await fs.readdir(assetsDir, { withFileTypes: true })
     const files = entries.filter((entry) => entry.isFile())
 
@@ -42,6 +44,25 @@ async function main() {
       const data = await fs.readFile(filePath)
       const mimeType = inferMimeType(file.name)
 
+      const existing = await collection.findOne({ name: file.name }, { projection: { fileId: 1 } })
+      if (existing?.fileId) {
+        try {
+          await bucket.delete(existing.fileId)
+        } catch {
+          // Ignore stale file delete errors and continue with fresh upload.
+        }
+      }
+
+      const fileId = await new Promise((resolve, reject) => {
+        const uploadStream = bucket.openUploadStream(file.name, {
+          contentType: mimeType,
+          metadata: { name: file.name },
+        })
+        uploadStream.on('error', reject)
+        uploadStream.on('finish', () => resolve(uploadStream.id))
+        uploadStream.end(data)
+      })
+
       await collection.updateOne(
         { name: file.name },
         {
@@ -49,7 +70,7 @@ async function main() {
             name: file.name,
             mimeType,
             size: data.length,
-            data: new Binary(data),
+            fileId,
             updatedAt: new Date(),
           },
         },

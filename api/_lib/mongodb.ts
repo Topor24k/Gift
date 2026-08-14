@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb'
+import { GridFSBucket, MongoClient } from 'mongodb'
 
 type MongoCache = {
   client: MongoClient | null
@@ -29,7 +29,12 @@ export async function getMongoClient(): Promise<MongoClient> {
   }
 
   if (!globalCache.__mongoCache.promise) {
-    const client = new MongoClient(getMongoUri())
+    const client = new MongoClient(getMongoUri(), {
+      serverSelectionTimeoutMS: 4000,
+      connectTimeoutMS: 4000,
+      socketTimeoutMS: 10000,
+      maxPoolSize: 5,
+    })
     globalCache.__mongoCache.promise = client.connect()
   }
 
@@ -40,4 +45,14 @@ export async function getMongoClient(): Promise<MongoClient> {
 export async function getMediaCollection() {
   const client = await getMongoClient()
   return client.db(getDbName()).collection('media')
+}
+
+export async function getDb() {
+  const client = await getMongoClient()
+  return client.db(getDbName())
+}
+
+export async function getMediaBucket() {
+  const db = await getDb()
+  return new GridFSBucket(db, { bucketName: 'media' })
 }

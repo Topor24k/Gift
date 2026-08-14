@@ -1,12 +1,12 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { Binary } from 'mongodb'
-import { getMediaCollection } from './_lib/mongodb'
+import { getDb, getMediaBucket } from './_lib/mongodb'
 
 type MediaDoc = {
+  _id: unknown
   name: string
   mimeType: string
   size: number
-  data: Binary
+  fileId: unknown
   updatedAt?: Date
 }
 
@@ -35,15 +35,15 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const url = getRequestUrl(req)
     const name = url.searchParams.get('name')
     const prefix = url.searchParams.get('prefix') || ''
-    const collection = await getMediaCollection()
+    const db = await getDb()
+    const collection = db.collection<MediaDoc>('media')
 
     if (name) {
       const doc = await collection.findOne<MediaDoc>(
-        { name },
-        { projection: { _id: 0, name: 1, mimeType: 1, size: 1, data: 1, updatedAt: 1 } }
+        { name }
       )
 
-      if (!doc || !doc.data) {
+      if (!doc || !doc.fileId) {
         return sendJson(res, 404, { error: 'Media not found' })
       }
 
@@ -61,7 +61,19 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       if (doc.updatedAt) {
         res.setHeader('Last-Modified', doc.updatedAt.toUTCString())
       }
-      return res.end(Buffer.from(doc.data.buffer))
+
+      const bucket = await getMediaBucket()
+      const stream = bucket.openDownloadStream(doc.fileId as never)
+
+      stream.on('error', () => {
+        if (!res.headersSent) {
+          sendJson(res, 500, { error: 'Failed to stream media file' })
+        } else {
+          res.end()
+        }
+      })
+
+      return stream.pipe(res)
     }
 
     const filter = prefix

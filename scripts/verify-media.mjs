@@ -18,11 +18,11 @@ try {
   const photos = await collection.countDocuments({ name: /^photo_2026-08-15_/ })
   const hero = await collection.findOne(
     { name: 'IMG_5973.MP4' },
-    { projection: { _id: 0, name: 1, mimeType: 1, size: 1 } }
+    { projection: { _id: 0, name: 1, mimeType: 1, size: 1, fileId: 1 } }
   )
   const music = await collection.findOne(
     { name: 'Album Page.mp3' },
-    { projection: { _id: 0, name: 1, mimeType: 1, size: 1 } }
+    { projection: { _id: 0, name: 1, mimeType: 1, size: 1, fileId: 1 } }
   )
 
   const byType = await collection
