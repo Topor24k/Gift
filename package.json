@@ -7,9 +7,11 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
-    "format": "oxfmt"
+    "format": "oxfmt",
+    "upload:assets": "node scripts/upload-assets-to-mongodb.mjs"
   },
   "dependencies": {
+    "mongodb": "^6.19.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

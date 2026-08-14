@@ -1,34 +1,25 @@
 import { useEffect, useRef, useState, type RefObject, type ChangeEvent } from 'react'
 
-const asset = (name: string) => new URL(`../assets/${name}`, import.meta.url).href
+const apiMediaUrl = (name: string) => `/api/media?name=${encodeURIComponent(name)}`
 
-const heroVideo = asset('IMG_5973.MP4')
+const heroVideo = apiMediaUrl('IMG_5973.MP4')
 
-// Dynamically load all photo_2026-08-15 memories for the collage
-const memoriesGlob = import.meta.glob<{ default: string }>(
-  '../assets/photo_2026-08-15_*.jpg',
-  { eager: true }
-)
-const memoryPhotos: string[] = Object.values(memoriesGlob)
-  .map((m) => m.default)
-  .sort()
-
-const albumMusic = asset('Album Page.mp3')
+const albumMusic = apiMediaUrl('Album Page.mp3')
 
 // Personal timeline photos
-const mAug15  = asset('August 15.jpg')
-const mSep15  = asset('September 15.jpg')
-const mOct15  = asset('October 15.jpg')
-const mNov15  = asset('November 15.jpg')
-const mDec16  = asset('December 16.jpg')
-const mJan15  = asset('January 15.jpg')
-const mFeb14  = asset('February 14.jpg')
-const mFeb15  = asset('February 15.jpg')
-const mMar16  = asset('March 16.jpg')
-const mApr10  = asset('April 10.jpg')
-const mMay23  = asset('May 23.jpg')
-const mJun20  = asset('June 20.jpg')
-const mJul15  = asset('July 15.jpg')
+const mAug15  = apiMediaUrl('August 15.jpg')
+const mSep15  = apiMediaUrl('September 15.jpg')
+const mOct15  = apiMediaUrl('October 15.jpg')
+const mNov15  = apiMediaUrl('November 15.jpg')
+const mDec16  = apiMediaUrl('December 16.jpg')
+const mJan15  = apiMediaUrl('January 15.jpg')
+const mFeb14  = apiMediaUrl('February 14.jpg')
+const mFeb15  = apiMediaUrl('February 15.jpg')
+const mMar16  = apiMediaUrl('March 16.jpg')
+const mApr10  = apiMediaUrl('April 10.jpg')
+const mMay23  = apiMediaUrl('May 23.jpg')
+const mJun20  = apiMediaUrl('June 20.jpg')
+const mJul15  = apiMediaUrl('July 15.jpg')
 
 // Supplemental Unsplash imagery — all treated as B&W via CSS
 const U = {
@@ -126,6 +117,8 @@ function TimelineEntry({
             src={imgSrc}
             alt={imgAlt}
             className="w-full h-full object-cover grayscale-photo"
+            loading="lazy"
+            decoding="async"
             style={{ objectPosition: objectPosition ?? (isImported ? 'center top' : 'center') }}
           />
         </div>
@@ -293,6 +286,7 @@ function Lightbox({
           src={photos[current]}
           alt={`Memory ${current + 1}`}
           className="max-w-full max-h-[85vh] object-contain"
+          decoding="async"
           style={{ boxShadow: '0 8px 60px rgba(0,0,0,0.6)' }}
         />
       </div>
@@ -349,6 +343,7 @@ function Lightbox({
 export default function App() {
   const [showIntro, setShowIntro] = useState(true)
   const [lightbox, setLightbox] = useState<number | null>(null)
+  const [memoryPhotos, setMemoryPhotos] = useState<string[]>([])
   const [activeSection, setActiveSection] = useState<number | null>(null)
 
   const sections = [
@@ -379,6 +374,33 @@ export default function App() {
     window.addEventListener('scroll', updateActive, { passive: true })
     return () => window.removeEventListener('scroll', updateActive)
   }, [showIntro])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadMemoryPhotos() {
+      try {
+        const response = await fetch('/api/media?prefix=photo_2026-08-15_')
+        if (!response.ok) {
+          throw new Error(`Failed to load memory photos: ${response.status}`)
+        }
+
+        const payload = (await response.json()) as { files?: Array<{ name: string }> }
+        const names = payload.files?.map((file) => file.name) ?? []
+
+        if (!cancelled) {
+          setMemoryPhotos(names.map(apiMediaUrl))
+        }
+      } catch (error) {
+        console.error('Unable to load memory photos from API.', error)
+      }
+    }
+
+    loadMemoryPhotos()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const [scrollY, setScrollY] = useState(0)
   useEffect(() => {
@@ -855,6 +877,7 @@ export default function App() {
                         src={futureImgSrc}
                         alt="August 15 — your photo"
                         className="w-full h-full object-cover grayscale-photo"
+                        decoding="async"
                       />
                     ) : (
                       <>
@@ -983,6 +1006,7 @@ export default function App() {
                 alt={`Memory ${i + 1}`}
                 className="w-full h-auto object-cover grayscale-photo transition-transform duration-500 group-hover:scale-[1.03]"
                 loading="lazy"
+                decoding="async"
               />
             </button>
           ))}
