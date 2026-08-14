@@ -382,7 +382,8 @@ export default function App() {
       try {
         const response = await fetch('/api/media?prefix=photo_2026-08-15_')
         if (!response.ok) {
-          throw new Error(`Failed to load memory photos: ${response.status}`)
+          const details = await response.text()
+          throw new Error(`Failed to load memory photos: ${response.status} ${details}`)
         }
 
         const payload = (await response.json()) as { files?: Array<{ name: string }> }
@@ -420,7 +421,11 @@ export default function App() {
       setPlaying(false)
     } else {
       audio.play()
-      setPlaying(true)
+        .then(() => setPlaying(true))
+        .catch((error) => {
+          console.error('Unable to play album music.', error)
+          setPlaying(false)
+        })
     }
   }
 
