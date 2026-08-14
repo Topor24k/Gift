@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { getDb, getMediaBucket } from './_lib/mongodb'
+import { getDb, getMediaBucket } from './_lib/mongodb.js'
 
 type MediaDoc = {
   _id: unknown

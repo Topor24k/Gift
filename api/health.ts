@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { getMediaCollection } from './_lib/mongodb'
+import { getMediaCollection } from './_lib/mongodb.js'
 
 function sendJson(res: ServerResponse, statusCode: number, payload: unknown): void {
   res.statusCode = statusCode
