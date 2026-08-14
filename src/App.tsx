@@ -14,11 +14,6 @@ const memoryPhotos: string[] = Object.values(memoriesGlob)
   .sort()
 
 const albumMusic = asset('Album Page.mp3')
-import imgBouquet from '@/imports/061576612878c47a4262f1fa76214ab6.jpg'
-import imgMyOnlyLove from '@/imports/05a0f047f03e9a78346ac78e922c4543.jpg'
-import imgDefinition from '@/imports/964276ba446619ccd25674ae91bff98e.jpg'
-import imgIFoundYou from '@/imports/bdd8b6daabe3c5b06e8843ec7f562ffb.jpg'
-import imgCameras from '@/imports/1932e3ee226fd9bf28a923c9a1e56d75.jpg'
 
 // Personal timeline photos
 const mAug15  = asset('August 15.jpg')
