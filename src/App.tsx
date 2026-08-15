@@ -1,17 +1,11 @@
 import { useEffect, useRef, useState, type RefObject, type ChangeEvent } from 'react'
 
-const asset = (name: string) => new URL(`../assets/${name}`, import.meta.url).href
+const asset = (name: string) => `/api/media?name=${encodeURIComponent(name)}`
 
 const heroVideo = asset('IMG_5973.MP4')
 
-// Dynamically load all photo_2026-08-15 memories for the collage
-const memoriesGlob = import.meta.glob<{ default: string }>(
-  '../assets/photo_2026-08-15_*.jpg',
-  { eager: true }
-)
-const memoryPhotos: string[] = Object.values(memoriesGlob)
-  .map((m) => m.default)
-  .sort()
+// The 88 collage photos are stored in MongoDB as Memories 1.jpg through Memories 88.jpg.
+const memoryPhotos = Array.from({ length: 88 }, (_, index) => asset(`Memories ${index + 1}.jpg`))
 
 const albumMusic = asset('Album Page.mp3')
 
@@ -198,7 +192,7 @@ function IntroOverlay({ onDone }: { onDone: () => void }) {
           opacity: 0,
         }}
       >
-        August 14, 2024 — August 14, 2025
+        August 15, 2025 — August 15, 2026
       </p>
 
       <h1
@@ -683,7 +677,7 @@ export default function App() {
             className="font-sans text-[11px] uppercase tracking-[0.3em] mb-6"
             style={{ color: 'rgba(245,243,238,0.6)' }}
           >
-            August 14, 2024 — August 14, 2025
+            August 15, 2025 — August 15, 2026
           </p>
           <h1
             className="font-script leading-none mb-5"

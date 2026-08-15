@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "format": "oxfmt",
-    "upload:assets": "node scripts/upload-assets-to-mongodb.mjs"
+    "upload:assets": "node scripts/upload-assets-to-mongodb.mjs",
+    "upload:assets:and-clean": "node scripts/upload-assets-to-mongodb.mjs --delete-source",
+    "verify:media": "node scripts/verify-media.mjs"
   },
   "dependencies": {
     "mongodb": "^6.19.0",

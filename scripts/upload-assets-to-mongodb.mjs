@@ -10,6 +10,7 @@ const assetsDir = path.join(projectRoot, 'assets')
 
 const MONGODB_URI = process.env.MONGODB_URI
 const MONGODB_DB = process.env.MONGODB_DB || 'gift'
+const deleteSource = process.argv.includes('--delete-source')
 
 if (!MONGODB_URI) {
   console.error('Missing MONGODB_URI. Set it before running upload:assets.')
@@ -36,15 +37,20 @@ async function main() {
     const collection = db.collection('media')
     const bucket = new GridFSBucket(db, { bucketName: 'media' })
     const entries = await fs.readdir(assetsDir, { withFileTypes: true })
-    const files = entries.filter((entry) => entry.isFile())
+    const files = entries.filter((entry) => entry.isFile()).sort((a, b) => a.name.localeCompare(b.name))
+    const memoryFiles = files.filter((file) => /^photo_2026-08-15_.*\.jpg$/i.test(file.name))
+    const memoryNames = new Map(memoryFiles.map((file, index) => [file.name, `Memories ${index + 1}.jpg`]))
+
+    await collection.createIndex({ name: 1 }, { unique: true })
 
     let uploaded = 0
     for (const file of files) {
       const filePath = path.join(assetsDir, file.name)
       const data = await fs.readFile(filePath)
-      const mimeType = inferMimeType(file.name)
+      const storedName = memoryNames.get(file.name) || file.name
+      const mimeType = inferMimeType(storedName)
 
-      const existing = await collection.findOne({ name: file.name }, { projection: { fileId: 1 } })
+      const existing = await collection.findOne({ name: storedName }, { projection: { fileId: 1 } })
       if (existing?.fileId) {
         try {
           await bucket.delete(existing.fileId)
@@ -54,9 +60,9 @@ async function main() {
       }
 
       const fileId = await new Promise((resolve, reject) => {
-        const uploadStream = bucket.openUploadStream(file.name, {
+        const uploadStream = bucket.openUploadStream(storedName, {
           contentType: mimeType,
-          metadata: { name: file.name },
+          metadata: { name: storedName },
         })
         uploadStream.on('error', reject)
         uploadStream.on('finish', () => resolve(uploadStream.id))
@@ -64,10 +70,10 @@ async function main() {
       })
 
       await collection.updateOne(
-        { name: file.name },
+        { name: storedName },
         {
           $set: {
-            name: file.name,
+            name: storedName,
             mimeType,
             size: data.length,
             fileId,
@@ -78,11 +84,29 @@ async function main() {
       )
 
       uploaded += 1
-      console.log(`Uploaded: ${file.name}`)
+      console.log(`Uploaded: ${storedName}`)
     }
 
-    await collection.createIndex({ name: 1 }, { unique: true })
-    console.log(`Done. Uploaded/updated ${uploaded} files into ${MONGODB_DB}.media`) 
+    // Remove obsolete records from the pre-rename photo names, if they exist.
+    const obsoleteMemories = await collection.find({ name: /^photo_2026-08-15_.*\.jpg$/i }, { projection: { fileId: 1 } }).toArray()
+    for (const media of obsoleteMemories) {
+      if (media.fileId) await bucket.delete(media.fileId).catch(() => undefined)
+    }
+    if (obsoleteMemories.length) {
+      await collection.deleteMany({ name: /^photo_2026-08-15_.*\.jpg$/i })
+    }
+
+    const uploadedDocuments = await collection.countDocuments({ name: { $in: files.map((file) => memoryNames.get(file.name) || file.name) } })
+    if (uploadedDocuments !== files.length) {
+      throw new Error(`Upload verification failed: expected ${files.length} documents, found ${uploadedDocuments}.`)
+    }
+
+    console.log(`Done. Uploaded/updated ${uploaded} files into ${MONGODB_DB}.media`)
+
+    if (deleteSource) {
+      await Promise.all(files.map((file) => fs.unlink(path.join(assetsDir, file.name))))
+      console.log(`Deleted ${files.length} uploaded source files from assets.`)
+    }
   } finally {
     await client.close()
   }

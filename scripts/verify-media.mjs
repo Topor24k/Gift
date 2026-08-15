@@ -15,7 +15,7 @@ try {
   const collection = client.db(dbName).collection('media')
 
   const total = await collection.countDocuments()
-  const photos = await collection.countDocuments({ name: /^photo_2026-08-15_/ })
+  const photos = await collection.countDocuments({ name: /^Memories \d+\.jpg$/ })
   const hero = await collection.findOne(
     { name: 'IMG_5973.MP4' },
     { projection: { _id: 0, name: 1, mimeType: 1, size: 1, fileId: 1 } }
