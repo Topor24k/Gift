@@ -9,6 +9,23 @@ const memoryPhotos = Array.from({ length: 88 }, (_, index) => asset(`Memories ${
 
 const albumMusic = asset('Album Page.mp3')
 
+type AnniversaryStatus = 'tomorrow' | 'today' | null
+
+function getAnniversaryStatus(now = new Date()): AnniversaryStatus {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Manila',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(now)
+  const value = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value
+  const localDate = `${value('year')}-${value('month')}-${value('day')}`
+
+  if (localDate === '2026-08-15') return 'today'
+  if (localDate < '2026-08-15') return 'tomorrow'
+  return null
+}
+
 // Personal timeline photos
 const mAug15  = asset('August 15.jpg')
 const mSep15  = asset('September 15.jpg')
@@ -347,6 +364,13 @@ export default function App() {
   const [showIntro, setShowIntro] = useState(true)
   const [lightbox, setLightbox] = useState<number | null>(null)
   const [activeSection, setActiveSection] = useState<number | null>(null)
+  const [anniversaryStatus, setAnniversaryStatus] = useState<AnniversaryStatus>(() => getAnniversaryStatus())
+
+  useEffect(() => {
+    const updateStatus = () => setAnniversaryStatus(getAnniversaryStatus())
+    const interval = window.setInterval(updateStatus, 60_000)
+    return () => window.clearInterval(interval)
+  }, [])
 
   const sections = [
     { id: 'hero',     label: 'Home' },
@@ -831,8 +855,8 @@ export default function App() {
             />
           ))}
 
-          {/* ── Special: August 15, 2026 — tomorrow ── */}
-          <Reveal>
+          {/* Only shown through August 15; it disappears after the anniversary date. */}
+          {anniversaryStatus && <Reveal>
             <div
               className="flex flex-col md:flex-row items-center gap-10 md:gap-16"
             >
@@ -887,7 +911,7 @@ export default function App() {
                   />
                 </label>
 
-                {/* Floating "coming tomorrow" pill */}
+                {/* Floating day counter */}
                 <div
                   className="absolute -bottom-3 -right-3 px-3 py-1.5"
                   style={{
@@ -916,7 +940,7 @@ export default function App() {
                     className="font-sans text-[9px] uppercase tracking-[0.18em] px-2 py-0.5 border"
                     style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}
                   >
-                    tomorrow
+                    {anniversaryStatus}
                   </span>
                 </div>
 
@@ -943,7 +967,7 @@ export default function App() {
                 </p>
               </div>
             </div>
-          </Reveal>
+          </Reveal>}
         </div>
       </section>
 
